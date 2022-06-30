@@ -49,7 +49,7 @@ Other datasets that you could use are
 and **[KITTI](http://www.cvlibs.net/datasets/kitti/)**.
 """
 
-annotation_folder = "/dataset/"
+annotation_folder = "/val/"
 if not os.path.exists(os.path.abspath(".") + annotation_folder):
     annotation_zip = tf.keras.utils.get_file(
         "val.tar.gz",
