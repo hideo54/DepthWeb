@@ -249,6 +249,7 @@ class DepthEstimationModel(tf.keras.Model):
         )
 
         # Structural similarity (SSIM) index
+        WIDTH = 256
         ssim_loss = tf.reduce_mean(
             1
             - tf.image.ssim(

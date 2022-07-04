@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 import numpy as np
@@ -45,7 +46,7 @@ def init():
             learning_rate=LR,
             amsgrad=False,
         )
-        model = DepthEstimationModel()
+        model = depth_estimation.DepthEstimationModel()
         # Define the loss function
         cross_entropy = tf.keras.losses.SparseCategoricalCrossentropy(
             from_logits=True, reduction="none"
@@ -53,10 +54,10 @@ def init():
         # Compile the model
         model.compile(optimizer, loss=cross_entropy)
 
-        train_loader = DataGenerator(
+        train_loader = depth_estimation.DataGenerator(
             data=df[:260].reset_index(drop="true"), batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
         )
-        validation_loader = DataGenerator(
+        validation_loader = depth_estimation.DataGenerator(
             data=df[260:].reset_index(drop="true"), batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
         )
         model.fit(
