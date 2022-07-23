@@ -3,6 +3,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 import numpy as np
+import cv2
 import matplotlib.pyplot as plt
 
 import depth_estimation
@@ -70,14 +71,21 @@ def init():
 def main():
     assert os.path.exists(os.path.abspath(".") + "/model/")
     model = tf.keras.models.load_model('model')
-    img = image.load_img('IMG_2943.jpeg', target_size = (256, 256))
-    img = image.img_to_array(img)
-    img = np.expand_dims(img, axis = 0)
+    image_path = 'sample.jpg'
+    original_img = cv2.imread(image_path)
+    original_img_size = np.shape(original_img)[:2][::-1]
+    original_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
+    original_img = cv2.resize(original_img, (256, 256))
+    original_img = tf.image.convert_image_dtype(original_img, tf.float32)
+    original_img = np.expand_dims(original_img, axis = 0)
 
-    pred = model.predict(img)
+    pred = model.predict(original_img)
     pred = pred.squeeze()
     pred = np.expand_dims(pred, axis = 2)
-    print(pred.shape)
-    image.save_img('predicted.jpg', pred)
+    pred = cv2.resize(pred, original_img_size)
+    plt.imshow(pred)
+    plt.show()
+    # image.save_img('predicted.jpg', pred)
 
+init()
 main()
