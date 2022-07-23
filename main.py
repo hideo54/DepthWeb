@@ -40,7 +40,7 @@ def init():
     BATCH_SIZE = 32
 
     model_folder = "/model/"
-    if not os.path.exists(os.path.abspath(".") + annotation_folder):
+    if not os.path.exists(os.path.abspath(".") + model_folder):
         print("Creating model...")
         optimizer = tf.keras.optimizers.Adam(
             learning_rate=LR,
