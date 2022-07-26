@@ -74,7 +74,6 @@ def init():
         model.save('model')
 
 def predict_depth(image_data):
-    assert os.path.exists(os.path.abspath('.') + '/model/')
     model = tf.keras.models.load_model('model')
     original_img = cv2.cvtColor(image_data, cv2.COLOR_BGR2RGB)
     original_img = cv2.resize(original_img, (256, 256))
@@ -97,6 +96,12 @@ def make_mini_depth_points(depth, original_image, length: int):
             points.append([original_x, original_y, depth[xi][yi], original_color_hex])
     return np.array(points)
 
+def download_model(bucket):
+    blobs = bucket.list_blobs(prefix='model/')
+    for blob in blobs:
+        os.makedirs(os.path.dirname(blob.name), exist_ok=True)
+        blob.download_to_filename(blob.name)
+
 @functions_framework.http
 def make_predicted_image(request: flask.Request):
     headers = {
@@ -112,7 +117,8 @@ def make_predicted_image(request: flask.Request):
 
             client = storage.Client()
             bucket = client.get_bucket('depth-web')
-            blob = bucket.blob(generated_filename)
+            if os.path.exists(os.path.abspath('.') + '/model/'):
+                download_model(bucket)
 
             original_image = cv2.imdecode(data, 1)
             original_image_size = np.shape(original_image)[:2][::-1]
@@ -122,7 +128,7 @@ def make_predicted_image(request: flask.Request):
             )
             depth_image = cv2.applyColorMap(depth_image, cv2.COLORMAP_JET)
             depth_image_str = cv2.imencode(f'.png', depth_image)[1].tostring()
-            blob.upload_from_string(depth_image_str, content_type='image/png')
+            bucket.blob(generated_filename).upload_from_string(depth_image_str, content_type='image/png')
             depth_points = make_mini_depth_points(depth, original_image, 100).tolist()
             res = {
                 'filename': generated_filename,
