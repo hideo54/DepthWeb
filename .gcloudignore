@@ -1,0 +1,5 @@
+__pycache__/
+front/node_modules/
+val/
+key.json
+val.tar.gz
