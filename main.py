@@ -103,8 +103,11 @@ def make_predicted_image(request: flask.Request):
 
             original_image = cv2.imdecode(data, 1)
             original_image_size = np.shape(original_image)[:2][::-1]
-            depth = predict_depth(data)
-            depth_image = cv2.resize(np.expand_dims(depth, axis = 2), original_image_size)
+            depth = predict_depth(original_image)
+            depth_image = cv2.resize(
+                np.expand_dims(((1 - depth) * 255).astype(np.uint8), axis = 2), original_image_size
+            )
+            depth_image = cv2.applyColorMap(depth_image, cv2.COLORMAP_JET)
             depth_image_str = cv2.imencode(f'.png', depth_image)[1].tostring()
             blob.upload_from_string(depth_image_str, content_type='image/png')
             res = {
