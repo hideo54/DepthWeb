@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { IconSpan } from '@hideo54/reactor';
+import { CloudUpload, Download } from '@styled-icons/ionicons-outline';
 import './App.css';
 
 function App() {
@@ -40,7 +42,7 @@ function App() {
         <p>Loading...</p>
       ) : (
         <label className='upload'>
-          画像をアップロード
+          <IconSpan LeftIcon={CloudUpload}>画像をアップロード</IconSpan>
           <input type='file' name='file' accept='image/png, image/jpeg' required onChange={onFileUpload} />
         </label>
       )}
