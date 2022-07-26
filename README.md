@@ -28,3 +28,5 @@ Keras が [keras-team/keras-io](https://github.com/keras-team/keras-io) にて [
 推奨コマンド: `gcloud functions deploy depth-web --runtime python39 --region asia-northeast1 --entry-point make_predicted_image --memory 1024MB --trigger-http --allow-unauthenticated`
 
 特に、メモリ指定は重要。標準では 256 MB だが、600 MB くらい使うので、1024 MB 割り当てるべきである。
+
+また、依存の関係で Python 3.10 では動かないため、ランタイムに Python 3.9 (`python39`) を指定するべきである。
