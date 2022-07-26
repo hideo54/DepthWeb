@@ -5,6 +5,11 @@ from tensorflow.keras.preprocessing import image
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
+import flask
+from google.cloud import storage
+import uuid
+import functions_framework
+import traceback
 
 import depth_estimation
 
@@ -69,24 +74,46 @@ def init():
         )
         model.save('model')
 
-def main():
+def predict_depth(image_data):
     assert os.path.exists(os.path.abspath('.') + '/model/')
     model = tf.keras.models.load_model('model')
-    image_path = 'sample.png'
-    original_img = cv2.imread(image_path)
-    original_img_size = np.shape(original_img)[:2][::-1]
-    original_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
+    original_img = cv2.cvtColor(image_data, cv2.COLOR_BGR2RGB)
     original_img = cv2.resize(original_img, (256, 256))
     original_img = tf.image.convert_image_dtype(original_img, tf.float32)
     original_img = np.expand_dims(original_img, axis = 0)
+    depth = model.predict(original_img).squeeze()
+    return depth
 
-    pred = model.predict(original_img)
-    pred = pred.squeeze()
-    pred = np.expand_dims(pred, axis = 2)
-    pred = cv2.resize(pred, original_img_size)
-    plt.imshow(pred)
-    plt.show()
-    # image.save_img('predicted.jpg', pred)
+@functions_framework.http
+def make_predicted_image(request: flask.Request):
+    headers = {
+        'Access-Control-Allow-Origin': '*',
+    }
+    if request.method == 'POST' and request.files['file']:
+        try:
+            file = request.files['file']
+            data = np.asarray(bytearray(file.read()), dtype=np.uint8)
+            ext = file.filename.split('.')[-1]
+            id = str(uuid.uuid4())
+            generated_filename = f'{id}.png'
 
-init()
-main()
+            client = storage.Client()
+            bucket = client.get_bucket('depth-web')
+            blob = bucket.blob(generated_filename)
+
+            original_image = cv2.imdecode(data, 1)
+            original_image_size = np.shape(original_image)[:2][::-1]
+            depth = predict_depth(data)
+            depth_image = cv2.resize(np.expand_dims(depth, axis = 2), original_image_size)
+            depth_image_str = cv2.imencode(f'.png', depth_image)[1].tostring()
+            blob.upload_from_string(depth_image_str, content_type='image/png')
+            res = {
+                'filename': generated_filename,
+                'depth': depth.tolist(),
+            }
+            return res, 200, headers
+        except Exception as e:
+            print(traceback.format_exc())
+            return 'Error', 500, headers
+    else:
+        return 'No photo uploaded', 400, headers
