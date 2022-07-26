@@ -86,13 +86,13 @@ def predict_depth(image_data):
 def make_mini_depth_points(depth, original_image_size: (int, int), length: int):
     points = np.array([
         [
-            np.round(x * original_image_size[0] / length).astype(int),
-            np.round(y * original_image_size[1] / length).astype(int),
-            np.round(depth[
+            np.round(x * original_image_size[1] / length).astype(int),
+            np.round(y * original_image_size[0] / length).astype(int),
+            depth[
                 np.round(x * np.shape(depth)[0] / length).astype(int)
             ][
                 np.round(y * np.shape(depth)[1] / length).astype(int)
-            ] * 255).astype(int),
+            ],
         ]
         for x in range(length) for y in range(length)
     ])
@@ -124,7 +124,7 @@ def make_predicted_image(request: flask.Request):
             depth_image = cv2.applyColorMap(depth_image, cv2.COLORMAP_JET)
             depth_image_str = cv2.imencode(f'.png', depth_image)[1].tostring()
             blob.upload_from_string(depth_image_str, content_type='image/png')
-            depth_points = make_mini_depth_points(depth, original_image_size, 30).tolist()
+            depth_points = make_mini_depth_points(depth, original_image_size, 100).tolist()
             res = {
                 'filename': generated_filename,
                 'depthPoints': depth_points,

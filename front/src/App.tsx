@@ -57,7 +57,12 @@ function App() {
             data={[{
               x: depth.map(d => d[0]),
               y: depth.map(d => d[1]),
-              z: depth.map(d => d[2]),
+              z: depth.map(d =>
+                d[2] * Math.min(
+                  depth[depth.length - 1][0],
+                  depth[depth.length - 1][1]
+                )
+              ),
               type: 'scatter3d',
               mode: 'markers',
               marker: {
@@ -66,6 +71,7 @@ function App() {
             }]}
             layout={{
               scene: {
+                aspectmode: 'data',
                 camera: {
                   eye: { x: -1, y: -1, z: 1.7 },
                   up: { x: -100, y: -1, z: 0 },
