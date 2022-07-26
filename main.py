@@ -47,7 +47,6 @@ def init():
 
     model_folder = '/model/'
     if not os.path.exists(os.path.abspath('.') + model_folder):
-    # if True:
         print('Creating model...')
         optimizer = tf.keras.optimizers.Adam(
             learning_rate=LR,
@@ -84,6 +83,21 @@ def predict_depth(image_data):
     depth = model.predict(original_img).squeeze()
     return depth
 
+def make_mini_depth_points(depth, original_image_size: (int, int), length: int):
+    points = np.array([
+        [
+            np.round(x * original_image_size[0] / length).astype(int),
+            np.round(y * original_image_size[1] / length).astype(int),
+            np.round(depth[
+                np.round(x * np.shape(depth)[0] / length).astype(int)
+            ][
+                np.round(y * np.shape(depth)[1] / length).astype(int)
+            ] * 255).astype(int),
+        ]
+        for x in range(length) for y in range(length)
+    ])
+    return points
+
 @functions_framework.http
 def make_predicted_image(request: flask.Request):
     headers = {
@@ -110,9 +124,10 @@ def make_predicted_image(request: flask.Request):
             depth_image = cv2.applyColorMap(depth_image, cv2.COLORMAP_JET)
             depth_image_str = cv2.imencode(f'.png', depth_image)[1].tostring()
             blob.upload_from_string(depth_image_str, content_type='image/png')
+            depth_points = make_mini_depth_points(depth, original_image_size, 30).tolist()
             res = {
                 'filename': generated_filename,
-                'depth': depth.tolist(),
+                'depthPoints': depth_points,
             }
             return res, 200, headers
         except Exception as e:
