@@ -83,20 +83,19 @@ def predict_depth(image_data):
     depth = model.predict(original_img).squeeze()
     return depth
 
-def make_mini_depth_points(depth, original_image_size: (int, int), length: int):
-    points = np.array([
-        [
-            np.round(x * original_image_size[1] / length).astype(int),
-            np.round(y * original_image_size[0] / length).astype(int),
-            depth[
-                np.round(x * np.shape(depth)[0] / length).astype(int)
-            ][
-                np.round(y * np.shape(depth)[1] / length).astype(int)
-            ],
-        ]
-        for x in range(length) for y in range(length)
-    ])
-    return points
+def make_mini_depth_points(depth, original_image, length: int):
+    original_image_size = np.shape(original_image)[:2] # [::-1] is not required here
+    points = []
+    for x in range(length):
+        for y in range(length):
+            original_x = np.round(x * original_image_size[0] / length).astype(int)
+            original_y = np.round(y * original_image_size[1] / length).astype(int)
+            xi = np.round(x * np.shape(depth)[0] / length).astype(int)
+            yi = np.round(y * np.shape(depth)[1] / length).astype(int)
+            original_color = original_image[original_x][original_y][::-1]
+            original_color_hex = '#' + ''.join(map(lambda x: '0x{:02x}'.format(x)[2:], original_color.tolist()))
+            points.append([original_x, original_y, depth[xi][yi], original_color_hex])
+    return np.array(points)
 
 @functions_framework.http
 def make_predicted_image(request: flask.Request):
@@ -119,12 +118,12 @@ def make_predicted_image(request: flask.Request):
             original_image_size = np.shape(original_image)[:2][::-1]
             depth = predict_depth(original_image)
             depth_image = cv2.resize(
-                np.expand_dims(((1 - depth) * 255).astype(np.uint8), axis = 2), original_image_size
+                np.expand_dims((depth * 255).astype(np.uint8), axis = 2), original_image_size
             )
             depth_image = cv2.applyColorMap(depth_image, cv2.COLORMAP_JET)
             depth_image_str = cv2.imencode(f'.png', depth_image)[1].tostring()
             blob.upload_from_string(depth_image_str, content_type='image/png')
-            depth_points = make_mini_depth_points(depth, original_image_size, 100).tolist()
+            depth_points = make_mini_depth_points(depth, original_image, 100).tolist()
             res = {
                 'filename': generated_filename,
                 'depthPoints': depth_points,

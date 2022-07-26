@@ -66,14 +66,15 @@ function App() {
               type: 'scatter3d',
               mode: 'markers',
               marker: {
-                size: 1,
+                size: 0.6,
+                color: depth.map(d => d[3]),
               },
             }]}
             layout={{
               scene: {
                 aspectmode: 'data',
                 camera: {
-                  eye: { x: -1, y: -1, z: 1.7 },
+                  eye: { x: -0.5, y: -0.5, z: 1.5 },
                   up: { x: -100, y: -1, z: 0 },
                 },
               },
