@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@hideo54/reactor": "^1.5.1",
+    "@styled-icons/ionicons-outline": "^10.34.0",
     "@types/node": "^16.11.45",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
