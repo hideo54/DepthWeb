@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import Plot from 'react-plotly.js';
 import { IconSpan } from '@hideo54/reactor';
-import { CloudUpload, Download } from '@styled-icons/ionicons-outline';
+import { CloudUpload } from '@styled-icons/ionicons-outline';
 import './App.css';
 
 function App() {
@@ -24,9 +25,9 @@ function App() {
         body: formData,
       });
       if (res.status === 200) {
-        const { depth, filename } = await res.json();
+        const { depthPoints, filename } = await res.json();
         setDepthImageUrl(`https://storage.googleapis.com/depth-web/${filename}`);
-        setDepth(depth);
+        setDepth(depthPoints);
       } else {
         setErrorMessage('エラーが発生しました');
       }
@@ -47,12 +48,31 @@ function App() {
         </label>
       )}
       {errorMessage && <p>{errorMessage}</p>}
-      {depthImageUrl &&
+      {depthImageUrl && depth &&
         <section>
           <h2>深度画像</h2>
           <img src={depthImageUrl} alt='Depth' />
           <h2>点群</h2>
-          <p>TODO:</p>
+          <Plot
+            data={[{
+              x: depth.map(d => d[0]),
+              y: depth.map(d => d[1]),
+              z: depth.map(d => d[2]),
+              type: 'scatter3d',
+              mode: 'markers',
+              marker: {
+                size: 1,
+              },
+            }]}
+            layout={{
+              scene: {
+                camera: {
+                  eye: { x: -1, y: -1, z: 1.7 },
+                  up: { x: -100, y: -1, z: 0 },
+                },
+              },
+            }}
+          />
         </section>
       }
     </div>
