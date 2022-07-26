@@ -20,7 +20,7 @@ function App() {
       setIsLoading(true);
       setDepthImageUrl(null);
       setDepth(null);
-      const res = await fetch('http://localhost:8080', {
+      const res = await fetch('https://asia-northeast1-hideo54.cloudfunctions.net/depth-web', {
         method: 'POST',
         body: formData,
       });
