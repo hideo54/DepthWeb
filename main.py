@@ -13,35 +13,75 @@ import traceback
 
 import depth_estimation
 
-def make_dataframes():
-    annotation_folder = '/val/'
-    if not os.path.exists(os.path.abspath('.') + annotation_folder):
-        annotation_zip = tf.keras.utils.get_file(
-            'val.tar.gz',
-            cache_subdir=os.path.abspath('.'),
-            origin='http://diode-dataset.s3.amazonaws.com/val.tar.gz',
-            extract=True,
-        )
+def make_dataframes(lite=True):
+    if lite:
+        annotation_folder = '/val/'
+        if not os.path.exists(os.path.abspath('.') + annotation_folder):
+            annotation_zip = tf.keras.utils.get_file(
+                'val.tar.gz',
+                cache_subdir=os.path.abspath('.'),
+                origin='http://diode-dataset.s3.amazonaws.com/val.tar.gz',
+                extract=True,
+            )
 
-    path = 'val/'
-    filelist = []
+        filelist = []
+        for root, dirs, files in os.walk(annotation_folder):
+            for file in files:
+                filelist.append(os.path.join(root, file))
+        data = {
+            'image': [x for x in filelist if x.endswith('.png')],
+            'depth': [x for x in filelist if x.endswith('_depth.npy')],
+            'mask': [x for x in filelist if x.endswith('_depth_mask.npy')],
+        }
+        df = pd.DataFrame(data)
+        df = df.sample(frac=1, random_state=42)
+        return df[:260].reset_index(drop='true'), df[260:].reset_index(drop='true')
 
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            filelist.append(os.path.join(root, file))
+    else:
+        train_folder = '/train/'
+        if not os.path.exists(os.path.abspath('.') + train_folder):
+            train_zip = tf.keras.utils.get_file(
+                'train.tar.gz',
+                cache_subdir=os.path.abspath('.'),
+                origin='http://diode-dataset.s3.amazonaws.com/train.tar.gz',
+                extract=True,
+            )
 
-    filelist.sort()
-    data = {
-        'image': [x for x in filelist if x.endswith('.png')],
-        'depth': [x for x in filelist if x.endswith('_depth.npy')],
-        'mask': [x for x in filelist if x.endswith('_depth_mask.npy')],
-    }
-    df = pd.DataFrame(data)
-    df = df.sample(frac=1, random_state=42)
-    return df[:260].reset_index(drop='true'), df[260:].reset_index(drop='true')
+        val_folder = '/val/'
+        if not os.path.exists(os.path.abspath('.') + val_folder):
+            train_zip = tf.keras.utils.get_file(
+                'val.tar.gz',
+                cache_subdir=os.path.abspath('.'),
+                origin='http://diode-dataset.s3.amazonaws.com/val.tar.gz',
+                extract=True,
+            )
+
+        train_filelist = []
+        for root, dirs, files in os.walk(train_folder):
+            for file in files:
+                train_filelist.append(os.path.join(root, file))
+        train_data = {
+            'image': [x for x in train_filelist if x.endswith('.png')],
+            'depth': [x for x in train_filelist if x.endswith('_depth.npy')],
+            'mask': [x for x in train_filelist if x.endswith('_depth_mask.npy')],
+        }
+        train_df = pd.DataFrame(train_data)
+
+        val_filelist = []
+        for root, dirs, files in os.walk(train_folder):
+            for file in files:
+                val_filelist.append(os.path.join(root, file))
+        val_data = {
+            'image': [x for x in val_filelist if x.endswith('.png')],
+            'depth': [x for x in val_filelist if x.endswith('_depth.npy')],
+            'mask': [x for x in val_filelist if x.endswith('_depth_mask.npy')],
+        }
+        val_df = pd.DataFrame(val_data)
+
+        return train_df, val_df
 
 def init():
-    train_df, val_df = make_dataframes()
+    train_df, val_df = make_dataframes(lite=True)
 
     HEIGHT = 256
     WIDTH = 256
