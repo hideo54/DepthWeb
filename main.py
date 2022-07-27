@@ -13,7 +13,7 @@ import traceback
 
 import depth_estimation
 
-def init():
+def make_dataframes():
     annotation_folder = '/val/'
     if not os.path.exists(os.path.abspath('.') + annotation_folder):
         annotation_zip = tf.keras.utils.get_file(
@@ -38,6 +38,10 @@ def init():
     }
     df = pd.DataFrame(data)
     df = df.sample(frac=1, random_state=42)
+    return df[:260].reset_index(drop='true'), df[260:].reset_index(drop='true')
+
+def init():
+    train_df, val_df = make_dataframes()
 
     HEIGHT = 256
     WIDTH = 256
@@ -61,10 +65,10 @@ def init():
         model.compile(optimizer, loss=cross_entropy)
 
         train_loader = depth_estimation.DataGenerator(
-            data=df[:260].reset_index(drop='true'), batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
+            data=train_df, batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
         )
         validation_loader = depth_estimation.DataGenerator(
-            data=df[260:].reset_index(drop='true'), batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
+            data=val_df, batch_size=BATCH_SIZE, dim=(HEIGHT, WIDTH)
         )
         model.fit(
             train_loader,
