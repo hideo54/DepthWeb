@@ -154,36 +154,39 @@ def make_predicted_image(request: flask.Request):
     headers = {
         'Access-Control-Allow-Origin': '*',
     }
-    if request.method == 'POST' and request.files['file']:
-        try:
-            file = request.files['file']
-            data = np.asarray(bytearray(file.read()), dtype=np.uint8)
-            ext = file.filename.split('.')[-1]
-            id = str(uuid.uuid4())
-            generated_filename = f'{id}.png'
+    if request.path == '/api/predict':
+        if request.method == 'POST' and request.files['file']:
+            try:
+                file = request.files['file']
+                data = np.asarray(bytearray(file.read()), dtype=np.uint8)
+                ext = file.filename.split('.')[-1]
+                id = str(uuid.uuid4())
+                generated_filename = f'{id}.png'
 
-            client = storage.Client()
-            bucket = client.get_bucket('depth-web')
-            if os.path.exists(os.path.abspath('.') + '/model/'):
-                download_model(bucket)
+                client = storage.Client()
+                bucket = client.get_bucket('depth-web')
+                if os.path.exists(os.path.abspath('.') + '/model/'):
+                    download_model(bucket)
 
-            original_image = cv2.imdecode(data, 1)
-            original_image_size = np.shape(original_image)[:2][::-1]
-            depth = predict_depth(original_image)
-            depth_image = cv2.resize(
-                np.expand_dims((depth * 255).astype(np.uint8), axis = 2), original_image_size
-            )
-            depth_image = cv2.applyColorMap(depth_image, cv2.COLORMAP_JET)
-            depth_image_str = cv2.imencode(f'.png', depth_image)[1].tostring()
-            bucket.blob(generated_filename).upload_from_string(depth_image_str, content_type='image/png')
-            depth_points = make_mini_depth_points(depth, original_image, 100).tolist()
-            res = {
-                'filename': generated_filename,
-                'depthPoints': depth_points,
-            }
-            return res, 200, headers
-        except Exception as e:
-            print(traceback.format_exc())
-            return 'Error', 500, headers
+                original_image = cv2.imdecode(data, 1)
+                original_image_size = np.shape(original_image)[:2][::-1]
+                depth = predict_depth(original_image)
+                depth_image = cv2.resize(
+                    np.expand_dims((depth * 255).astype(np.uint8), axis = 2), original_image_size
+                )
+                depth_image = cv2.applyColorMap(depth_image, cv2.COLORMAP_JET)
+                depth_image_str = cv2.imencode(f'.png', depth_image)[1].tostring()
+                bucket.blob(generated_filename).upload_from_string(depth_image_str, content_type='image/png')
+                depth_points = make_mini_depth_points(depth, original_image, 100).tolist()
+                res = {
+                    'filename': generated_filename,
+                    'depthPoints': depth_points,
+                }
+                return res, 200, headers
+            except Exception as e:
+                print(traceback.format_exc())
+                return 'Error', 500, headers
+        else:
+            return 'No photo uploaded', 400, headers
     else:
-        return 'No photo uploaded', 400, headers
+        return 400
