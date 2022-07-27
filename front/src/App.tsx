@@ -5,7 +5,7 @@ import { CloudUpload } from '@styled-icons/ionicons-outline';
 import './App.css';
 
 const App = () => {
-  const apiOrigin = 'https://asia-northeast1-hideo54.cloudfunctions.net';
+  const apiEndpoint = '/depth-web/api/predict';
   const bucketName = 'depth-web';
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -22,7 +22,7 @@ const App = () => {
       setIsLoading(true);
       setDepthImageUrl(null);
       setDepth(null);
-      const res = await fetch(`${apiOrigin}/api/predict`, {
+      const res = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData,
       });

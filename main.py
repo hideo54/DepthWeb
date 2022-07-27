@@ -151,10 +151,17 @@ def download_model(bucket):
 
 @functions_framework.http
 def make_predicted_image(request: flask.Request):
-    headers = {
-        'Access-Control-Allow-Origin': '*',
-    }
-    if request.path == '/api/predict':
+    ENDPOINT_PREFIX = '/depth-web'
+
+    if ENDPOINT_PREFIX == '/':
+        print('Note that Flask treats a directory named `static` as special one and rob this function of control.')
+
+    if not request.path.startswith(ENDPOINT_PREFIX):
+        return 'Try to access to path with certain prefix.', 400
+
+    path = request.path.removeprefix(ENDPOINT_PREFIX)
+
+    if path == '/api/predict':
         if request.method == 'POST' and request.files['file']:
             try:
                 file = request.files['file']
@@ -189,4 +196,11 @@ def make_predicted_image(request: flask.Request):
         else:
             return 'No photo uploaded', 400, headers
     else:
-        return 400
+        if request.method != 'GET':
+            return '', 400
+        if path == '/':
+            path = '/index.html'
+        abs_path = os.getcwd() + '/front/build' + path
+        dir = os.path.dirname(abs_path)
+        filename = os.path.basename(abs_path)
+        return flask.send_from_directory(dir, filename)

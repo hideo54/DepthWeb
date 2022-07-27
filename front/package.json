@@ -2,6 +2,7 @@
   "name": "depth-web",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://asia-northeast1-hideo54.cloudfunctions.net/depth-web",
   "dependencies": {
     "@hideo54/reactor": "^1.5.1",
     "@styled-icons/ionicons-outline": "^10.34.0",
