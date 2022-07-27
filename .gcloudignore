@@ -1,5 +1,7 @@
 __pycache__/
 front/node_modules/
+train.tar.gz
+train/
+val.tar.gz
 val/
 key.json
-val.tar.gz
