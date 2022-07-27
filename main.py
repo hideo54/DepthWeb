@@ -23,7 +23,7 @@ def make_dataframes():
             extract=True,
         )
 
-    path = 'val/indoors'
+    path = 'val/'
     filelist = []
 
     for root, dirs, files in os.walk(path):
@@ -76,6 +76,9 @@ def init():
             validation_data=validation_loader,
         )
         model.save('model')
+
+if __name__ == '__main__':
+    init()
 
 def predict_depth(image_data):
     model = tf.keras.models.load_model('model')
