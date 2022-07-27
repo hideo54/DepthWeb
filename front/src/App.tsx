@@ -4,7 +4,9 @@ import { IconSpan } from '@hideo54/reactor';
 import { CloudUpload } from '@styled-icons/ionicons-outline';
 import './App.css';
 
-function App() {
+const App = () => {
+  const apiOrigin = 'https://asia-northeast1-hideo54.cloudfunctions.net';
+  const bucketName = 'depth-web';
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [depthImageUrl, setDepthImageUrl] = useState<string | null>(null);
@@ -20,13 +22,13 @@ function App() {
       setIsLoading(true);
       setDepthImageUrl(null);
       setDepth(null);
-      const res = await fetch('https://asia-northeast1-hideo54.cloudfunctions.net/depth-web', {
+      const res = await fetch(`${apiOrigin}/api/predict`, {
         method: 'POST',
         body: formData,
       });
       if (res.status === 200) {
         const { depthPoints, filename } = await res.json();
-        setDepthImageUrl(`https://storage.googleapis.com/depth-web/${filename}`);
+        setDepthImageUrl(`https://storage.googleapis.com/${bucketName}/${filename}`);
         setDepth(depthPoints);
       } else {
         setErrorMessage('エラーが発生しました');
@@ -84,6 +86,6 @@ function App() {
       }
     </div>
   );
-}
+};
 
 export default App;
