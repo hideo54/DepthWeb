@@ -151,16 +151,16 @@ def download_model(bucket):
 
 @functions_framework.http
 def make_predicted_image(request: flask.Request):
-    ENDPOINT_PREFIX = '/depth-web'
+    if request.authorization is None:
+        return '', 401, { 'WWW-Authenticate': 'Basic' }
+    password = os.environ.get('PASSWORD')
+    if password is None:
+        raise Exception('Env variable PASSWORD is not set.')
+    if not (request.authorization['username'] == 'depth-web' and request.authorization['password'] == password):
+        return '', 401, { 'WWW-Authenticate': 'Basic' }
 
-    if ENDPOINT_PREFIX == '/':
-        print('Note that Flask treats a directory named `static` as special one and rob this function of control.')
-
-    if not request.path.startswith(ENDPOINT_PREFIX):
-        return 'Try to access to path with certain prefix.', 400
-
-    path = request.path.removeprefix(ENDPOINT_PREFIX)
-
+    path = request.path
+    path = path.removeprefix('/depth-web') # Needed for local debug
     if path == '/api/predict':
         if request.method == 'POST' and request.files['file']:
             try:
@@ -189,12 +189,12 @@ def make_predicted_image(request: flask.Request):
                     'filename': generated_filename,
                     'depthPoints': depth_points,
                 }
-                return res, 200, headers
+                return res, 200
             except Exception as e:
                 print(traceback.format_exc())
-                return 'Error', 500, headers
+                return 'Error', 500
         else:
-            return 'No photo uploaded', 400, headers
+            return 'No photo uploaded', 400
     else:
         if request.method != 'GET':
             return '', 400

@@ -27,7 +27,7 @@ Keras が [keras-team/keras-io](https://github.com/keras-team/keras-io) にて [
 
 モデルの用意と、フロントエンドのビルドを終えたあとに、デプロイコマンドを実行する。
 
-推奨コマンド: `gcloud functions deploy depth-web --runtime python39 --region asia-northeast1 --entry-point make_predicted_image --memory 1024MB --trigger-http --allow-unauthenticated`
+推奨コマンド: `gcloud functions deploy depth-web --runtime python39 --region asia-northeast1 --entry-point make_predicted_image --memory 1024MB --set-env-vars PASSWORD=password --trigger-http --allow-unauthenticated`
 
 特に、メモリ指定は重要。標準では 256 MB だが、600 MB くらい使うので、1024 MB 割り当てるべきである。
 
