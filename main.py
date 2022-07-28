@@ -134,14 +134,14 @@ def make_mini_depth_points(depth, original_image, length: int):
     points = []
     for x in range(length):
         for y in range(length):
-            original_x = np.round(x * original_image_size[0] / length).astype(int)
-            original_y = np.round(y * original_image_size[1] / length).astype(int)
-            xi = np.round(x * np.shape(depth)[0] / length).astype(int)
-            yi = np.round(y * np.shape(depth)[1] / length).astype(int)
+            original_x = int(np.round(x * original_image_size[0] / length))
+            original_y = int(np.round(y * original_image_size[1] / length))
+            xi = int(np.round(x * np.shape(depth)[0] / length))
+            yi = int(np.round(y * np.shape(depth)[1] / length))
             original_color = original_image[original_x][original_y][::-1]
             original_color_hex = '#' + ''.join(map(lambda x: '0x{:02x}'.format(x)[2:], original_color.tolist()))
-            points.append([original_x, original_y, depth[xi][yi], original_color_hex])
-    return np.array(points)
+            points.append([original_x, original_y, round(float(depth[xi][yi]), 6), original_color_hex])
+    return points
 
 def download_model(bucket):
     blobs = bucket.list_blobs(prefix='model/')
@@ -184,7 +184,7 @@ def make_predicted_image(request: flask.Request):
                 depth_image = cv2.applyColorMap(depth_image, cv2.COLORMAP_JET)
                 depth_image_str = cv2.imencode(f'.png', depth_image)[1].tostring()
                 bucket.blob(generated_filename).upload_from_string(depth_image_str, content_type='image/png')
-                depth_points = make_mini_depth_points(depth, original_image, 100).tolist()
+                depth_points = make_mini_depth_points(depth, original_image, 100)
                 res = {
                     'filename': generated_filename,
                     'depthPoints': depth_points,
