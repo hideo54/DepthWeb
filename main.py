@@ -172,7 +172,7 @@ def make_predicted_image(request: flask.Request):
 
                 client = storage.Client()
                 bucket = client.get_bucket('depth-web')
-                if os.path.exists(os.path.abspath('.') + '/model/'):
+                if not os.path.exists(os.path.abspath('.') + '/model/'):
                     download_model(bucket)
 
                 original_image = cv2.imdecode(data, 1)
