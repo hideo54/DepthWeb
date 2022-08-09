@@ -88,7 +88,7 @@ class DataGenerator(tf.keras.utils.Sequence):
         mask = np.load(mask)
         mask = mask > 0
 
-        max_depth = min(300, np.percentile(depth_map, 99))
+        max_depth = 360
         depth_map = np.clip(depth_map, self.min_depth, max_depth)
         depth_map = np.log(depth_map)
 
