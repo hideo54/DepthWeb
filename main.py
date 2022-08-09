@@ -81,7 +81,7 @@ def make_dataframes(lite=True):
         return train_df, val_df
 
 def init():
-    train_df, val_df = make_dataframes(lite=True)
+    train_df, val_df = make_dataframes(lite=False)
 
     HEIGHT = 256
     WIDTH = 256
