@@ -25,7 +25,7 @@ def make_dataframes(lite=True):
             )
 
         filelist = []
-        for root, dirs, files in os.walk(annotation_folder):
+        for root, dirs, files in os.walk(os.path.abspath('.') + annotation_folder):
             for file in files:
                 filelist.append(os.path.join(root, file))
         data = {
