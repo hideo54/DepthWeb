@@ -15,8 +15,8 @@ import depth_estimation
 
 def make_dataframes(lite=True):
     if lite:
-        annotation_folder = '/val/'
-        if not os.path.exists(os.path.abspath('.') + annotation_folder):
+        annotation_folder = os.path.abspath('.') + '/val/'
+        if not os.path.exists(annotation_folder):
             annotation_zip = tf.keras.utils.get_file(
                 'val.tar.gz',
                 cache_subdir=os.path.abspath('.'),
@@ -25,7 +25,7 @@ def make_dataframes(lite=True):
             )
 
         filelist = []
-        for root, dirs, files in os.walk(os.path.abspath('.') + annotation_folder):
+        for root, dirs, files in os.walk(annotation_folder):
             for file in files:
                 filelist.append(os.path.join(root, file))
         data = {
@@ -38,8 +38,8 @@ def make_dataframes(lite=True):
         return df[:260].reset_index(drop='true'), df[260:].reset_index(drop='true')
 
     else:
-        train_folder = '/train/'
-        if not os.path.exists(os.path.abspath('.') + train_folder):
+        train_folder = os.path.abspath('.') + '/train/'
+        if not os.path.exists(train_folder):
             train_zip = tf.keras.utils.get_file(
                 'train.tar.gz',
                 cache_subdir=os.path.abspath('.'),
@@ -47,8 +47,8 @@ def make_dataframes(lite=True):
                 extract=True,
             )
 
-        val_folder = '/val/'
-        if not os.path.exists(os.path.abspath('.') + val_folder):
+        val_folder = os.path.abspath('.') + '/val/'
+        if not os.path.exists(val_folder):
             train_zip = tf.keras.utils.get_file(
                 'val.tar.gz',
                 cache_subdir=os.path.abspath('.'),
@@ -89,8 +89,8 @@ def init():
     EPOCHS = 30
     BATCH_SIZE = 32
 
-    model_folder = '/model/'
-    if not os.path.exists(os.path.abspath('.') + model_folder):
+    model_folder = os.path.abspath('.') + '/model/'
+    if not os.path.exists(model_folder):
         print('Creating model...')
         optimizer = tf.keras.optimizers.Adam(
             learning_rate=LR,
